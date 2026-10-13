@@ -1,0 +1,2 @@
+res a = "say \"hi\""
+res b = "back\\slash"

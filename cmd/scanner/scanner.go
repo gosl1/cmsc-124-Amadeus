@@ -11,8 +11,6 @@ type Scanner struct {
 	start   int
 	current int
 	line    int
-
-	hadError bool
 }
 
 // keywords maps each themed lexeme to its token type.
@@ -47,7 +45,7 @@ func (s *Scanner) ScanTokens() ([]Token, bool) {
 		s.scanToken()
 	}
 	s.tokens = append(s.tokens, Token{Type: EOF, Lexeme: "", Literal: nil, Line: s.line})
-	return s.tokens, s.hadError
+	return s.tokens, hadError
 }
 
 func (s *Scanner) scanToken() {
@@ -114,15 +112,15 @@ func (s *Scanner) scanToken() {
 
 	// whitespace
 	case ' ', '\t', '\r':
-    	// discard, emit nothing
+		// discard, emit nothing
 
 	// increment s.line when emcountering new line character
 	case '\n':
-    	s.line++
+		s.line++
 
 	case '"':
 		s.stringLiteral()
-	
+
 	//case '/':
 	default:
 		if isDigit(c) {
@@ -215,7 +213,7 @@ func (s *Scanner) number() {
 
 func (s *Scanner) stringLiteral() {
 	var value []byte
- 
+
 	for s.peek() != '"' && !s.isAtEnd() && s.peek() != '\n' {
 		if s.peek() == '\\' {
 			s.advance() // consume the backslash
@@ -237,12 +235,12 @@ func (s *Scanner) stringLiteral() {
 		}
 		value = append(value, s.advance())
 	}
- 
+
 	if s.isAtEnd() || s.peek() == '\n' {
 		s.reportError(s.line, "Unterminated string.")
 		return
 	}
- 
+
 	s.advance() // consume the closing "
 	s.addToken(STRING, string(value))
 }

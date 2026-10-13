@@ -8,44 +8,44 @@ type TokenType string
 
 const (
 	// grouping
-	LEFT_PAREN     TokenType = "LEFT_PAREN"
-	RIGHT_PAREN    TokenType = "RIGHT_PAREN"
-	LEFT_BRACE     TokenType = "LEFT_BRACE"
-	RIGHT_BRACE    TokenType = "RIGHT_BRACE"
+	LEFT_PAREN  TokenType = "LEFT_PAREN"
+	RIGHT_PAREN TokenType = "RIGHT_PAREN"
+	LEFT_BRACE  TokenType = "LEFT_BRACE"
+	RIGHT_BRACE TokenType = "RIGHT_BRACE"
 
 	// arithmetic
-	PLUS    	   TokenType = "PLUS"
-	MINUS   	   TokenType = "MINUS"
-	STAR    	   TokenType = "STAR"
-	SLASH  	       TokenType = "SLASH"
-	PERCENT 	   TokenType = "PERCENT"
+	PLUS    TokenType = "PLUS"
+	MINUS   TokenType = "MINUS"
+	STAR    TokenType = "STAR"
+	SLASH   TokenType = "SLASH"
+	PERCENT TokenType = "PERCENT"
 
 	// assignment
-	EQUAL 		   TokenType = "EQUAL"
+	EQUAL TokenType = "EQUAL"
 
 	// comparison
-	EQUAL_EQUAL    TokenType = "EQUAL_EQUAL"
-	BANG_EQUAL     TokenType = "BANG_EQUAL"
-	LESS           TokenType = "LESS"
-	LESS_EQUAL     TokenType = "LESS_EQUAL"
-	GREATER        TokenType = "GREATER"
-	GREATER_EQUAL  TokenType = "GREATER_EQUAL"
+	EQUAL_EQUAL   TokenType = "EQUAL_EQUAL"
+	BANG_EQUAL    TokenType = "BANG_EQUAL"
+	LESS          TokenType = "LESS"
+	LESS_EQUAL    TokenType = "LESS_EQUAL"
+	GREATER       TokenType = "GREATER"
+	GREATER_EQUAL TokenType = "GREATER_EQUAL"
 
 	// logical
-	BANG           TokenType = "BANG"
-	AND  	       TokenType = "AND"
-	OR   		   TokenType = "OR"
+	BANG TokenType = "BANG"
+	AND  TokenType = "AND"
+	OR   TokenType = "OR"
 
 	// indexing / access
-	LEFT_BRACKET   TokenType = "LEFT_BRACKET"
-	RIGHT_BRACKET  TokenType = "RIGHT_BRACKET"
-	DOT            TokenType = "DOT"
-	COMMA          TokenType = "COMMA"
+	LEFT_BRACKET  TokenType = "LEFT_BRACKET"
+	RIGHT_BRACKET TokenType = "RIGHT_BRACKET"
+	DOT           TokenType = "DOT"
+	COMMA         TokenType = "COMMA"
 
 	// literals
-	IDENTIFIER     TokenType = "IDENTIFIER"
-	STRING         TokenType = "STRING"
-	NUMBER         TokenType = "NUMBER"
+	IDENTIFIER TokenType = "IDENTIFIER"
+	STRING     TokenType = "STRING"
+	NUMBER     TokenType = "NUMBER"
 
 	// keywords (Amadeus vocabulary)
 	RES            TokenType = "RES"            // res   — variable declaration
@@ -60,7 +60,7 @@ const (
 	FALSE          TokenType = "FALSE"
 	NULL           TokenType = "NULL"
 
-	EOF            TokenType = "EOF"
+	EOF TokenType = "EOF"
 )
 
 // Token bundles a lexeme with the information downstream phases need.

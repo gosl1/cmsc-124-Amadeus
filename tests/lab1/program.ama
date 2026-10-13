@@ -1,0 +1,16 @@
+operation grow(n) {
+    res total = 0
+    timeleap (n > 0) {
+        div (n % 2 == 0) {
+            total = total + n
+        } con {
+            total = total - 1
+        }
+        n = n - 1
+    }
+    elpsy total
+}
+
+// history check
+res log = readingsteiner()
+dmail "done"
