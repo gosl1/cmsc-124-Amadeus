@@ -1,0 +1,4 @@
+Token(type=NUMBER, lexeme=50, literal=50, line=1)
+Token(type=SLASH, lexeme=/, literal=null, line=1)
+Token(type=NUMBER, lexeme=20, literal=20, line=1)
+Token(type=EOF, lexeme=, literal=null, line=1)
