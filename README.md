@@ -232,7 +232,7 @@ Run locally with:
 ```bash
 curl -sSL https://raw.githubusercontent.com/WhiteLicorice/cmsc-124-harness/v1.1/run_tests.py -o run_tests.py
 ./build.sh
-python3 run_tests.py tests/lab1
+python run_tests.py tests/lab1
 ```
 
 ## Sample code
