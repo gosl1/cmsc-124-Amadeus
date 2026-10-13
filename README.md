@@ -22,7 +22,7 @@ Amadeus is a dynamically typed, general-purpose scripting language inspired by t
 |---|---|
 | `./run <file>` | [Executes a program. Available from Lab 4.] |
 | `./run --tokenize <file>` | [Prints the token stream.] |
-| `./run --parse <file>` | [Prints the parsed tree.] |
+| `./run --parse <file>` | Parses one expression and prints its abstract syntax tree. |
 | `./run --eval <file>` | [Evaluates each expression and prints its value.] |
 | `./run` | [Starts the REPL.] |
 
@@ -133,7 +133,7 @@ Unambiguous, with precedence and associativity encoded in rule structure.]
 ## Parse output format
 
 ```
-[one line of real --parse output, e.g. (+ 1.0 (* 2.0 3.0))]
+(+ 1 (* 2 3))
 ```
 
 - Groupings print as: [form]
