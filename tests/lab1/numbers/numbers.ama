@@ -1,0 +1,6 @@
+res a = 42
+res b = 0
+res c = 3.14
+res d = 100.001
+res e = 3.toString
+res f = .5

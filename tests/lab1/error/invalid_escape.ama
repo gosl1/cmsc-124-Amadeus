@@ -1,0 +1,1 @@
+res s = "bad \q escape"

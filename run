@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-binary="./bin/interpreter"
+binary="./bin/scanner"
 
 # Detect Windows executable suffix (.exe)
 if [[ -f "$binary.exe" ]]; then
