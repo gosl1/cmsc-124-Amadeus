@@ -55,7 +55,7 @@ const (
 	TIMELEAP       TokenType = "TIMELEAP"       // timeleap — while
 	OPERATION      TokenType = "OPERATION"      // operation — function declaration
 	ELPSY          TokenType = "ELPSY"          // elpsy — return
-	READINGSTEINER TokenType = "READINGSTEINER" // readingsteiner — execution-history value
+	READINGSTEINER TokenType = "READINGSTEINER" // readingsteiner —
 	TRUE           TokenType = "TRUE"
 	FALSE          TokenType = "FALSE"
 	NULL           TokenType = "NULL"

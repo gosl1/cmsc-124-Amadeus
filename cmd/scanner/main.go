@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -13,6 +14,34 @@ func main() {
 		return
 	}
 
+	if len(args) == 0 {
+		runREPL()
+		return
+	}
+
+}
+
+// runREPL reads one line at a time, scans it, and prints its tokens.
+func runREPL() {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("> ")
+		line, err := reader.ReadString('\n')
+		if line != "" {
+			hadError = false
+			tokens, failed := NewScanner(line).ScanTokens()
+			// Same rule as file mode: a rejected line prints nothing to stdout.
+			if !failed {
+				for _, token := range tokens {
+					fmt.Println(token)
+				}
+			}
+		}
+		if err != nil { // io.EOF (Ctrl-D / Ctrl-Z) ends the session cleanly
+			fmt.Println()
+			os.Exit(0)
+		}
+	}
 }
 
 func runFileTokenize(path string) {
