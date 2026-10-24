@@ -114,7 +114,7 @@ func (s *Scanner) scanToken() {
 	case ' ', '\t', '\r':
 		// discard, emit nothing
 
-	// increment s.line when emcountering new line character
+	// increment s.line when encountering new line character
 	case '\n':
 		s.line++
 
@@ -141,6 +141,7 @@ func (s *Scanner) advance() byte {
 	c := s.source[s.current]
 	s.current++
 	return c
+
 }
 
 func (s *Scanner) addToken(tokenType TokenType, literal any) {
