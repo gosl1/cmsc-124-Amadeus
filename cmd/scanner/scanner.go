@@ -128,7 +128,7 @@ func (s *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			s.reportError(s.line, fmt.Sprintf("Unexpected character '%c'.", c))
+			reportError(s.line, fmt.Sprintf("Unexpected character '%c'.", c))
 		}
 	}
 }
@@ -206,7 +206,7 @@ func (s *Scanner) number() {
 	text := s.source[s.start:s.current]
 	value, err := strconv.ParseFloat(text, 64)
 	if err != nil {
-		s.reportError(s.line, fmt.Sprintf("Malformed number '%s'.", text))
+		reportError(s.line, fmt.Sprintf("Malformed number '%s'.", text))
 		return
 	}
 	s.addToken(NUMBER, value)
@@ -218,7 +218,7 @@ func (s *Scanner) stringLiteral() {
 	for s.peek() != '"' && !s.isAtEnd() && s.peek() != '\n' {
 		if s.peek() == '\\' {
 			s.advance() // consume the backslash
-			if s.isAtEnd() || s.peek() != '\n' {
+			if s.isAtEnd() || s.peek() == '\n' {
 				break
 			}
 			escaped := s.advance()
@@ -230,7 +230,7 @@ func (s *Scanner) stringLiteral() {
 			case '\\':
 				value = append(value, '\\')
 			default:
-				s.reportError(s.line, fmt.Sprintf("Invalid escape sequence '\\%c'.", escaped))
+				reportError(s.line, fmt.Sprintf("Invalid escape sequence '\\%c'.", escaped))
 			}
 			continue
 		}
@@ -238,7 +238,7 @@ func (s *Scanner) stringLiteral() {
 	}
 
 	if s.isAtEnd() || s.peek() == '\n' {
-		s.reportError(s.line, "Unterminated string.")
+		reportError(s.line, "Unterminated string.")
 		return
 	}
 
