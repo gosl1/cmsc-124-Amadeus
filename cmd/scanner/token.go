@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // TokenType categorizes a lexeme so downstream phases can switch on a
 // category instead of comparing raw strings.
@@ -73,7 +76,10 @@ type Token struct {
 
 func (t Token) String() string {
 	lit := "null"
-	if t.Literal != nil {
+	if f, ok := t.Literal.(float64); ok {
+		// 'f' with -1 prints the shortest exact digits, never scientific notation
+		lit = strconv.FormatFloat(f, 'f', -1, 64)
+	} else if t.Literal != nil {
 		lit = fmt.Sprintf("%v", t.Literal)
 	}
 	return fmt.Sprintf("Token(type=%s, lexeme=%s, literal=%s, line=%d)",
