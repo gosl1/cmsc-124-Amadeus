@@ -114,7 +114,7 @@ func (s *Scanner) scanToken() {
 	case ' ', '\t', '\r':
 		// discard, emit nothing
 
-	// increment s.line when emcountering new line character
+	// increment s.line when encountering new line character
 	case '\n':
 		s.line++
 
@@ -128,7 +128,7 @@ func (s *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			s.reportError(s.line, fmt.Sprintf("Unexpected character '%c'.", c))
+			reportError(s.line, fmt.Sprintf("Unexpected character '%c'.", c))
 		}
 	}
 }
@@ -141,6 +141,7 @@ func (s *Scanner) advance() byte {
 	c := s.source[s.current]
 	s.current++
 	return c
+
 }
 
 func (s *Scanner) addToken(tokenType TokenType, literal any) {
@@ -205,7 +206,7 @@ func (s *Scanner) number() {
 	text := s.source[s.start:s.current]
 	value, err := strconv.ParseFloat(text, 64)
 	if err != nil {
-		s.reportError(s.line, fmt.Sprintf("Malformed number '%s'.", text))
+		reportError(s.line, fmt.Sprintf("Malformed number '%s'.", text))
 		return
 	}
 	s.addToken(NUMBER, value)
@@ -217,7 +218,7 @@ func (s *Scanner) stringLiteral() {
 	for s.peek() != '"' && !s.isAtEnd() && s.peek() != '\n' {
 		if s.peek() == '\\' {
 			s.advance() // consume the backslash
-			if s.isAtEnd() {
+			if s.isAtEnd() || s.peek() == '\n' {
 				break
 			}
 			escaped := s.advance()
@@ -229,7 +230,7 @@ func (s *Scanner) stringLiteral() {
 			case '\\':
 				value = append(value, '\\')
 			default:
-				s.reportError(s.line, fmt.Sprintf("Invalid escape sequence '\\%c'.", escaped))
+				reportError(s.line, fmt.Sprintf("Invalid escape sequence '\\%c'.", escaped))
 			}
 			continue
 		}
@@ -237,7 +238,7 @@ func (s *Scanner) stringLiteral() {
 	}
 
 	if s.isAtEnd() || s.peek() == '\n' {
-		s.reportError(s.line, "Unterminated string.")
+		reportError(s.line, "Unterminated string.")
 		return
 	}
 

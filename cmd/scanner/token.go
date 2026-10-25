@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // TokenType categorizes a lexeme so downstream phases can switch on a
 // category instead of comparing raw strings.
@@ -55,7 +59,7 @@ const (
 	TIMELEAP       TokenType = "TIMELEAP"       // timeleap — while
 	OPERATION      TokenType = "OPERATION"      // operation — function declaration
 	ELPSY          TokenType = "ELPSY"          // elpsy — return
-	READINGSTEINER TokenType = "READINGSTEINER" // readingsteiner — execution-history value
+	READINGSTEINER TokenType = "READINGSTEINER" // readingsteiner —
 	TRUE           TokenType = "TRUE"
 	FALSE          TokenType = "FALSE"
 	NULL           TokenType = "NULL"
@@ -73,7 +77,14 @@ type Token struct {
 
 func (t Token) String() string {
 	lit := "null"
-	if t.Literal != nil {
+	if f, ok := t.Literal.(float64); ok {
+		// 'f' with -1 prints the shortest exact digits, never scientific notation
+		lit = strconv.FormatFloat(f, 'f', -1, 64)
+	} else if str, ok := t.Literal.(string); ok {
+		// A decoded newline would split one token across two output lines, so
+		// show it as \n. Backslashes are doubled so the output is unambiguous.
+		lit = strings.NewReplacer("\\", "\\\\", "\n", "\\n").Replace(str)
+	} else if t.Literal != nil {
 		lit = fmt.Sprintf("%v", t.Literal)
 	}
 	return fmt.Sprintf("Token(type=%s, lexeme=%s, literal=%s, line=%d)",
