@@ -1,7 +1,7 @@
 Token(type=RES, lexeme=res, literal=null, line=1)
 Token(type=IDENTIFIER, lexeme=a, literal=null, line=1)
 Token(type=EQUAL, lexeme==, literal=null, line=1)
-Token(type=STRING, lexeme="say \"hi\"", literal=say \"hi"\, line=1)
+Token(type=STRING, lexeme="say \"hi\"", literal=say \"hi\", line=1)
 Token(type=RES, lexeme=res, literal=null, line=2)
 Token(type=IDENTIFIER, lexeme=b, literal=null, line=2)
 Token(type=EQUAL, lexeme==, literal=null, line=2)
