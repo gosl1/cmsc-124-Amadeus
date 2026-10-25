@@ -218,7 +218,7 @@ func (s *Scanner) stringLiteral() {
 	for s.peek() != '"' && !s.isAtEnd() && s.peek() != '\n' {
 		if s.peek() == '\\' {
 			s.advance() // consume the backslash
-			if s.isAtEnd() {
+			if s.isAtEnd() || s.peek() != '\n' {
 				break
 			}
 			escaped := s.advance()
