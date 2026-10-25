@@ -19,6 +19,10 @@ func main() {
 		return
 	}
 
+	// Anything else (missing file, unknown flag) is a usage error.
+	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file>]")
+	os.Exit(64)
+
 }
 
 // runREPL reads one line at a time, scans it, and prints its tokens.
