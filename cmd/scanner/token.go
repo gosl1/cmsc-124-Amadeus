@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // TokenType categorizes a lexeme so downstream phases can switch on a
@@ -79,6 +80,10 @@ func (t Token) String() string {
 	if f, ok := t.Literal.(float64); ok {
 		// 'f' with -1 prints the shortest exact digits, never scientific notation
 		lit = strconv.FormatFloat(f, 'f', -1, 64)
+	} else if str, ok := t.Literal.(string); ok {
+		// A decoded newline would split one token across two output lines, so
+		// show it as \n. Backslashes are doubled so the output is unambiguous.
+		lit = strings.NewReplacer("\\", "\\\\", "\n", "\\n").Replace(str)
 	} else if t.Literal != nil {
 		lit = fmt.Sprintf("%v", t.Literal)
 	}
