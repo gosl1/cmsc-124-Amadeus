@@ -30,3 +30,22 @@ func (p *Parser) advance() Token {
 	}
 	return p.previous()
 }
+
+func (p *Parser) check(types ...TokenType) bool {
+	for _, typ := range types {
+		if p.peek().Type == typ {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (p *Parser) match(types ...TokenType) bool {
+	if p.check(types...) {
+		p.advance()
+		return true
+	}
+
+	return false
+}
