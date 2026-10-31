@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 type Parser struct {
 	tokens  []Token
 	current int
@@ -13,10 +17,16 @@ func NewParser(tokens []Token) *Parser {
 }
 
 func (p *Parser) peek() Token {
+	if p.current >= len(p.tokens) {
+		return Token{Type: EOF, Line: 1}
+	}
 	return p.tokens[p.current]
 }
 
 func (p *Parser) previous() Token {
+	if p.current == 0 {
+		return Token{Type: EOF, Line: p.peek().Line}
+	}
 	return p.tokens[p.current-1]
 }
 
@@ -48,4 +58,29 @@ func (p *Parser) match(types ...TokenType) bool {
 	}
 
 	return false
+}
+
+type parseError struct {
+	token   Token
+	message string
+}
+
+func (e parseError) Error() string {
+	return fmt.Sprintf("[Parser Error] line %d: %s", e.token.Line, e.message)
+}
+
+func (p *Parser) fail(token Token, message string) {
+	panic(parseError{
+		token:   token,
+		message: message,
+	})
+}
+
+func (p *Parser) consume(tokenType TokenType, message string) Token {
+	if p.check(tokenType) {
+		return p.advance()
+	}
+
+	p.fail(p.peek(), message)
+	return Token{}
 }
