@@ -1,0 +1,5 @@
+{
+  "ext": ".ama",
+  "flag": "--parse",
+  "mode": "sidecar"
+}
