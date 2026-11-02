@@ -1,1 +1,2 @@
-NUMBER 123456789012345678.9 123456789012345679
+Token(type=NUMBER, lexeme=123456789012345678.9, literal=123456789012345680, line=1)
+Token(type=EOF, lexeme=, literal=null, line=1)

@@ -1,1 +1,2 @@
-STRING "hello\nworld" hello\nworld
+Token(type=STRING, lexeme="hello\nworld", literal=hello\nworld, line=1)
+Token(type=EOF, lexeme=, literal=null, line=1)
