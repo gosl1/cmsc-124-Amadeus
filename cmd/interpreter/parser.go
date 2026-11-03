@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 type Parser struct {
 	tokens  []Token
 	current int
@@ -66,7 +62,7 @@ type parseError struct {
 }
 
 func (e parseError) Error() string {
-	return fmt.Sprintf("[Parser Error] line %d: %s", e.token.Line, e.message)
+	return formatParseError(e.token, e.message)
 }
 
 func (p *Parser) fail(token Token, message string) {

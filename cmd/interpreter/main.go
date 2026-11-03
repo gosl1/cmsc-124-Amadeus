@@ -87,7 +87,12 @@ func runFileParse(path string) {
 
 	expr, err := NewParser(tokens).Parse()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		parseErr, ok := err.(parseError)
+		if !ok {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(65)
+		}
+		reportParseError(parseErr)
 		os.Exit(65)
 	}
 	fmt.Println(expr)
