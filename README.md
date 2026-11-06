@@ -21,17 +21,17 @@ Amadeus is a dynamically typed, general-purpose scripting language inspired by t
 | Command | What it does |
 |---|---|
 | `./run <file>` | [Executes a program. Available from Lab 4.] |
-| `./run --tokenize <file>` | [Prints the token stream.] |
-| `./run --parse <file>` | [Prints the parsed tree.] |
+| `./run --tokenize <file>` | Scans the file and prints one token per line, including EOF.  |
+| `./run --parse <file>` | - parses one expression per nonblank line and prints one AST per expression. |
 | `./run --eval <file>` | [Evaluates each expression and prints its value.] |
-| `./run` | [Starts the REPL.] |
+| `./run` | Starts the parser REPL; parses each input line and prints its AST. |
 
 
 Exit codes: 0 on successful run, 65 on a static error, 70 on a runtime error.
 
 ## File extension
 
-`[.ama]` 
+`.ama` 
 
 ## Lexical structure
 
@@ -60,16 +60,18 @@ Exit codes: 0 on successful run, 65 on a static error, 70 on a runtime error.
 
 | Operator | Category | Operands | Associativity | Precedence |
 |---|---|---|---|---|
-| `+` | arithmetic | binary | left | [TBD — set in Lab 2] |
-| `-` | arithmetic | binary | left | 5 |
-| `*` | arithmetic | binary | left | 6 |
-| `/` | arithmetic | binary | left | 6 |
-| `%` | arithmetic (modulo) | binary | left | 6 |
-| `=` | assignment | binary | right | 1 |
-| `== != < <= > >=` | comparison | binary | left | 4 |
-| `!` | logical (not) | unary | right | 7 |
-| `[` `]` | indexing (array/log access) | binary | left | 8 (tightest) |
-| `.` | field access | binary | left | 8 (tightest) |
+| `=` | assignment | binary | right | 1 (lowest) |
+| `or` | logical | binary | left | 2 |
+| `and` | logical | binary | left | 3 |
+| `== !=` | equality | binary | left | 4 |
+| `< <= > >=` | comparison | binary | left | 5 |
+| `+ -` | arithmetic | binary | left | 6 |
+| `* / %` | arithmetic | binary | left | 7 |
+| `! -` | unary | unary | right | 8 |
+
+The parser currently supports only the operators listed here. Although the
+scanner recognizes `[`, `]`, and `.`, indexing and field access are not yet
+part of the expression grammar.
 
 ### Literals
 
@@ -101,7 +103,11 @@ Exit codes: 0 on successful run, 65 on a static error, 70 on a runtime error.
 
 - Whitespace significant: no — spaces, tabs, and carriage returns are
   discarded and not counted as tokens
-- Statement terminator: newline (no semicolons)
+- The scanner discards newline tokens, but the parser uses token line numbers
+  to separate expressions.
+- The parser accepts one expression per nonblank line; statements and
+  statement terminators are not implemented yet. Blank and comment-only lines
+  are ignored. A file with no expressions is rejected.
 - Block delimiters: braces `{ }`
 - Grouping delimiters: parentheses `( )`
 - Newlines are discarded but increment the line counter exactly once, at the
@@ -111,33 +117,63 @@ Exit codes: 0 on successful run, 65 on a static error, 70 on a runtime error.
 ## Token output format
 
 ```
-[TBD format name](type=[TBD], lexeme=[TBD], literal=[TBD], line=1)
+Token(type=NUMBER, lexeme=42, literal=42, line=1)
+Token(type=STRING, lexeme="hello\nworld", literal=hello\nworld, line=2)
+Token(type=EOF, lexeme=, literal=null, line=3)
 ```
 
-Fields, left to right: token type (category, e.g. NUMBER), the lexeme (raw
-source text), the literal value (decoded/typed value, or absent for
-non-literal tokens), and the 1-indexed line number the token started on.
-One token per line, EOF included as the final token of every stream. Format
-must be frozen before the first `.expected` file is committed — see
-changelog if it changes later.
+Each token prints as `Token(type=TYPE, lexeme=TEXT, literal=VALUE, line=N)`.
+The fields are the token type, raw source lexeme, decoded/typed literal (or
+`null` when there is no literal), and the 1-indexed line where the token
+starts. String literal values are unquoted; backslashes, quotes, and embedded
+newlines are escaped in the display so a token stays on one output line.
+Numbers use fixed-point notation without unnecessary trailing zeroes. The
+stream ends with one EOF token. Token lines are written to stdout only when
+the whole file scans successfully.
 
 
 
 ## Grammar
 
 ```
-[Your complete context-free grammar, current as of the latest activity.
-Unambiguous, with precedence and associativity encoded in rule structure.]
+expression  → assignment
+assignment  → logic_or ( "=" assignment )?
+logic_or    → logic_and ( "or" logic_and )*
+logic_and   → equality ( "and" equality )*
+equality    → comparison ( ( "==" | "!=" ) comparison )*
+comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )*
+term        → factor ( ( "-" | "+" ) factor )*
+factor      → unary ( ( "/" | "*" | "%" ) unary )*
+unary       → ( "!" | "-" ) unary
+            | primary
+primary     → "false"
+            | "true"
+            | "null"
+            | NUMBER
+            | STRING
+            | IDENTIFIER
+            | "(" expression ")"
 ```
+
+Assignment is syntactically right-associative, but its left side must be a
+variable reference; other assignment targets are rejected. Each nonblank,
+non-comment line is parsed as one expression. Blank and comment-only lines are
+ignored, but a file containing no expressions is rejected.
 
 ## Parse output format
 
 ```
-[one line of real --parse output, e.g. (+ 1.0 (* 2.0 3.0))]
+Input:  1 + 2 * 3
+Output: (+ 1 (* 2 3))
 ```
 
-- Groupings print as: [form]
-- Numbers print as: [form]
+- Grouping expressions print as `(group expression)`.
+- Numbers print using fixed-point notation without unnecessary trailing zeroes
+  (for example, `4` and `3.14`). Values are parsed as `float64`.
+- Strings print quoted, with special characters escaped.
+- The parser prints one tree per expression line. If any line has a syntax
+  error, it reports the errors to stderr, prints no trees to stdout, and exits
+  with code 65.
 
 ## Semantics
 
@@ -191,23 +227,38 @@ true.]
 
 ## Errors and diagnostics
 
-Message format (draft, refine once real examples exist):
+Scanner errors are reported to stderr in the format
+`[Attractor Field Violation] line N: message`. Examples:
 
 ```
-[TBD prefix] Unexpected character '$' at line 12
-[TBD prefix] String has no closing quote, starting at line 7
+[Attractor Field Violation] line 1: Unexpected character '$'.
+[Attractor Field Violation] line 2: Invalid escape sequence '\q'.
+[Attractor Field Violation] line 2: Unterminated string.
+[Attractor Field Violation] line 3: Malformed number '999999999999999999999999999999999999999'.
 ```
 
-Both are reported on stderr; scanning continues afterward so multiple
-problems in one file are all reported; the file exits 65 once scanning
-finishes. Nothing about a rejected file is printed to stdout. A clean scan
-exits 0.
+Parser errors are reported to stderr with the unexpected token, or `end` when
+the parser reaches EOF. For example:
+
+```
+[line 1] Error at ')': Expect expression.
+[line 1] Error at end: Expect expression.
+```
+
+The scanner continues scanning after lexical errors and reports each one. If a
+file has any scanner error, it prints no tokens to stdout and exits 65; parsing
+does not proceed. The parser reports a syntax error for each malformed
+expression line and continues with later lines. If any parser error occurs, a
+rejected file prints nothing to stdout and exits 65. A successful scan or
+parse exits 0.
 
 | Failure | Exit code |
 |---|---|
 | Unterminated string literal | 65 |
 | Character that can't begin any lexeme | 65 |
-| [Third rejection case — TBD once decided per assignment requirement] | 65 |
+| Invalid string escape | 65 |
+| Malformed or out-of-range number | 65 |
+| Parser syntax error | 65 |
 
 
 

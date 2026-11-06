@@ -9,6 +9,11 @@ import (
 func main() {
 	args := os.Args[1:]
 
+	if len(args) >= 2 && args[0] == "--parse" {
+		runFileParse(args[1])
+		return
+	}
+
 	if len(args) >= 2 && args[0] == "--tokenize" {
 		runFileTokenize(args[1])
 		return
@@ -20,7 +25,7 @@ func main() {
 	}
 
 	// Anything else (missing file, unknown flag) is a usage error.
-	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file>]")
+	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file> | --parse <file>]")
 	os.Exit(64)
 
 }
@@ -64,5 +69,32 @@ func runFileTokenize(path string) {
 	for _, token := range tokens {
 		fmt.Println(token)
 	}
+	os.Exit(0)
+}
+
+func runFileParse(path string) {
+	source, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ama: cannot read '%s': %v\n", path, err)
+		os.Exit(65)
+	}
+
+	hadError = false
+	tokens, failed := NewScanner(string(source)).ScanTokens()
+	if failed {
+		os.Exit(65)
+	}
+
+	expr, err := NewParser(tokens).Parse()
+	if err != nil {
+		parseErr, ok := err.(parseError)
+		if !ok {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(65)
+		}
+		reportParseError(parseErr)
+		os.Exit(65)
+	}
+	fmt.Println(expr)
 	os.Exit(0)
 }

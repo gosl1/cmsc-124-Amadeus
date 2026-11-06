@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 type Parser struct {
 	tokens  []Token
 	current int
@@ -66,7 +62,7 @@ type parseError struct {
 }
 
 func (e parseError) Error() string {
-	return fmt.Sprintf("[Parser Error] line %d: %s", e.token.Line, e.message)
+	return formatParseError(e.token, e.message)
 }
 
 func (p *Parser) fail(token Token, message string) {
@@ -83,6 +79,24 @@ func (p *Parser) consume(tokenType TokenType, message string) Token {
 
 	p.fail(p.peek(), message)
 	return Token{}
+}
+
+func (p *Parser) Parse() (expr Expr, err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			parseErr, ok := recovered.(parseError)
+			if !ok {
+				panic(recovered)
+			}
+			err = parseErr
+		}
+	}()
+
+	expr = p.parseExpression()
+	if !p.isAtEnd() {
+		p.fail(p.peek(), "Unexpected token.")
+	}
+	return expr, nil
 }
 
 func (p *Parser) parseExpression() Expr {

@@ -1,8 +1,14 @@
 package main
 
+import (
+	"fmt"
+	"strconv"
+)
+
 // Expr is the interface implemented by every expression node.
 type Expr interface {
 	isExpr()
+	String() string
 }
 
 // Literal represents a literal value, such as a number, string, boolean, or null.
@@ -48,3 +54,36 @@ func (Assign) isExpr()   {}
 func (Unary) isExpr()    {}
 func (Binary) isExpr()   {}
 func (Grouping) isExpr() {}
+
+func (e Literal) String() string {
+	switch value := e.Value.(type) {
+	case nil:
+		return "null"
+	case string:
+		return strconv.Quote(value)
+	case float64:
+		return strconv.FormatFloat(value, 'f', -1, 64)
+	default:
+		return fmt.Sprint(value)
+	}
+}
+
+func (e Variable) String() string {
+	return e.Name.Lexeme
+}
+
+func (e Assign) String() string {
+	return fmt.Sprintf("(= %s %s)", e.Name.Lexeme, e.Value)
+}
+
+func (e Unary) String() string {
+	return fmt.Sprintf("(%s %s)", e.Operator.Lexeme, e.Right)
+}
+
+func (e Binary) String() string {
+	return fmt.Sprintf("(%s %s %s)", e.Operator.Lexeme, e.Left, e.Right)
+}
+
+func (e Grouping) String() string {
+	return fmt.Sprintf("(group %s)", e.Expression)
+}
