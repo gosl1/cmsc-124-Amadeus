@@ -29,7 +29,7 @@ func NewEvaluator() *Evaluator {
 // runtime value. If evaluation fails, it returns an error instead.
 func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 
-	// A type switch determines which AST node is being evaluated.
+	// type switch determines which AST node is being evaluated.
 	switch expr := expr.(type) {
 
 	case Literal:
@@ -37,7 +37,6 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 		return expr.Value, nil
 
 	case Grouping:
-		// Grouping does not perform any computation itself.
 		// Evaluate the expression contained within the parentheses.
 		return e.Evaluate(expr.Expression)
 
@@ -81,7 +80,22 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 			return nil, err
 		}
 
-		// Evaluate the right operand next.
+		// Handle logical operators before evaluating the right operand.
+		switch expr.Operator.Type {
+		case AND:
+			// If the left operand is falsey, return it without evaluating the right.
+			if !isTruthy(leftVal) {
+				return leftVal, nil
+			}
+
+		case OR:
+			// If the left operand is truthy, return it without evaluating the right.
+			if isTruthy(leftVal) {
+				return leftVal, nil
+			}
+		}
+
+		// Evaluate the right operand if necessary.
 		rightVal, err := e.Evaluate(expr.Right)
 		if err != nil {
 			return nil, err
@@ -168,11 +182,7 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 }
 
 // isTruthy determines whether a runtime value is considered true or false.
-//
-// Following the Lox-style truthiness convention:
-// - nil is false
-// - false is false
-// - All other values are true
+
 func isTruthy(value any) bool {
 
 	// Nil represents a falsey value.
