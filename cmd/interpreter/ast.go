@@ -14,6 +14,7 @@ type Expr interface {
 // Literal represents a literal value, such as a number, string, boolean, or null.
 type Literal struct {
 	Value any
+	Token Token
 }
 
 // Variable represents a variable reference.

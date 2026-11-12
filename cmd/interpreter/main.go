@@ -1,4 +1,4 @@
-package main
+	package main
 
 import (
 	"bufio"
@@ -85,16 +85,15 @@ func runFileParse(path string) {
 		os.Exit(65)
 	}
 
-	expr, err := NewParser(tokens).Parse()
-	if err != nil {
-		parseErr, ok := err.(parseError)
-		if !ok {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(65)
+	expressions, parseErrors := parseExpressions(tokens)
+	if len(parseErrors) > 0 {
+		for _, parseErr := range parseErrors {
+			reportParseError(parseErr)
 		}
-		reportParseError(parseErr)
 		os.Exit(65)
 	}
-	fmt.Println(expr)
+	for _, expr := range expressions {
+		fmt.Println(expr)
+	}
 	os.Exit(0)
 }

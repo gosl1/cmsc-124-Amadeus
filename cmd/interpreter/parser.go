@@ -99,6 +99,45 @@ func (p *Parser) Parse() (expr Expr, err error) {
 	return expr, nil
 }
 
+func parseExpressions(tokens []Token) ([]Expr, []parseError) {
+	var expressions []Expr
+	var parseErrors []parseError
+	var lineTokens []Token
+
+	parseLine := func(eofLine int) {
+		lineTokens = append(lineTokens, Token{Type: EOF, Line: eofLine})
+		expr, err := NewParser(lineTokens).Parse()
+		if err != nil {
+			parseErr, ok := err.(parseError)
+			if !ok {
+				panic(err)
+			}
+			parseErrors = append(parseErrors, parseErr)
+		} else {
+			expressions = append(expressions, expr)
+		}
+		lineTokens = nil
+	}
+
+	for _, token := range tokens {
+		if token.Type == EOF {
+			if len(lineTokens) > 0 {
+				parseLine(token.Line)
+			} else if len(expressions) == 0 && len(parseErrors) == 0 {
+				parseLine(token.Line)
+			}
+			break
+		}
+
+		if len(lineTokens) > 0 && token.Line != lineTokens[0].Line {
+			parseLine(lineTokens[0].Line)
+		}
+		lineTokens = append(lineTokens, token)
+	}
+
+	return expressions, parseErrors
+}
+
 func (p *Parser) parseExpression() Expr {
 	return p.parseAssignment()
 }
@@ -174,16 +213,17 @@ func (p *Parser) parseUnary() Expr {
 
 func (p *Parser) parsePrimary() Expr {
 	if p.match(FALSE) {
-		return Literal{Value: false}
+		return Literal{Value: false, Token: p.previous()}
 	}
 	if p.match(TRUE) {
-		return Literal{Value: true}
+		return Literal{Value: true, Token: p.previous()}
 	}
 	if p.match(NULL) {
-		return Literal{Value: nil}
+		return Literal{Value: nil, Token: p.previous()}
 	}
 	if p.match(NUMBER, STRING) {
-		return Literal{Value: p.previous().Literal}
+		token := p.previous()
+		return Literal{Value: token.Literal, Token: token}
 	}
 	if p.match(IDENTIFIER) {
 		return Variable{Name: p.previous()}

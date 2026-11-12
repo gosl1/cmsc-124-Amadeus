@@ -67,3 +67,101 @@ func TestParseErrorReporting(t *testing.T) {
 		})
 	}
 }
+
+func TestParseExpressionsByLine(t *testing.T) {
+	hadError = false
+	tokens, failed := NewScanner("1 + 2\n\n// ignored\n3 * 4").ScanTokens()
+	if failed {
+		t.Fatal("scanner rejected parser test input")
+	}
+
+	expressions, parseErrors := parseExpressions(tokens)
+	if len(parseErrors) != 0 {
+		t.Fatalf("unexpected parse errors: %v", parseErrors)
+	}
+	if got, want := len(expressions), 2; got != want {
+		t.Fatalf("parsed %d expressions, want %d", got, want)
+	}
+	if got, want := expressions[0].String(), "(+ 1 2)"; got != want {
+		t.Errorf("first expression = %q, want %q", got, want)
+	}
+	if got, want := expressions[1].String(), "(* 3 4)"; got != want {
+		t.Errorf("second expression = %q, want %q", got, want)
+	}
+}
+
+func TestLiteralRetainsSourceToken(t *testing.T) {
+	hadError = false
+	tokens, failed := NewScanner("  42").ScanTokens()
+	if failed {
+		t.Fatal("scanner rejected literal test input")
+	}
+
+	expr, err := NewParser(tokens).Parse()
+	if err != nil {
+		t.Fatalf("Parse() returned error: %v", err)
+	}
+	literal, ok := expr.(Literal)
+	if !ok {
+		t.Fatalf("Parse() returned %T, want Literal", expr)
+	}
+	if got, want := literal.Token.Type, NUMBER; got != want {
+		t.Errorf("literal token type = %q, want %q", got, want)
+	}
+	if got, want := literal.Token.Lexeme, "42"; got != want {
+		t.Errorf("literal token lexeme = %q, want %q", got, want)
+	}
+	if got, want := literal.Token.Line, 1; got != want {
+		t.Errorf("literal token line = %d, want %d", got, want)
+	}
+	if got, want := literal.Value, float64(42); got != want {
+		t.Errorf("literal value = %v, want %v", got, want)
+	}
+	if got, want := literal.String(), "42"; got != want {
+		t.Errorf("literal String() = %q, want %q", got, want)
+	}
+}
+
+func TestParseExpressionsContinuesAfterErrors(t *testing.T) {
+	hadError = false
+	tokens, failed := NewScanner("1 + )\n2 + * 3\n4").ScanTokens()
+	if failed {
+		t.Fatal("scanner rejected parser recovery test input")
+	}
+
+	expressions, parseErrors := parseExpressions(tokens)
+	if got, want := len(parseErrors), 2; got != want {
+		t.Fatalf("got %d parse errors, want %d", got, want)
+	}
+	if got, want := len(expressions), 1; got != want {
+		t.Fatalf("got %d valid expressions, want %d", got, want)
+	}
+	if got, want := expressions[0].String(), "4"; got != want {
+		t.Errorf("expression after errors = %q, want %q", got, want)
+	}
+	if got, want := parseErrors[0].token.Line, 1; got != want {
+		t.Errorf("first parse error line = %d, want %d", got, want)
+	}
+	if got, want := parseErrors[1].token.Line, 2; got != want {
+		t.Errorf("second parse error line = %d, want %d", got, want)
+	}
+}
+
+func TestParseExpressionsReportsErrorAfterValidLine(t *testing.T) {
+	hadError = false
+	tokens, failed := NewScanner("1 + 2\n3 + )\n4").ScanTokens()
+	if failed {
+		t.Fatal("scanner rejected parser recovery test input")
+	}
+
+	expressions, parseErrors := parseExpressions(tokens)
+	if got, want := len(parseErrors), 1; got != want {
+		t.Fatalf("got %d parse errors, want %d", got, want)
+	}
+	if got, want := len(expressions), 2; got != want {
+		t.Fatalf("got %d valid expressions, want %d", got, want)
+	}
+	if got, want := parseErrors[0].token.Line, 2; got != want {
+		t.Errorf("parse error line = %d, want %d", got, want)
+	}
+}
