@@ -90,6 +90,38 @@ func TestParseExpressionsByLine(t *testing.T) {
 	}
 }
 
+func TestLiteralRetainsSourceToken(t *testing.T) {
+	hadError = false
+	tokens, failed := NewScanner("  42").ScanTokens()
+	if failed {
+		t.Fatal("scanner rejected literal test input")
+	}
+
+	expr, err := NewParser(tokens).Parse()
+	if err != nil {
+		t.Fatalf("Parse() returned error: %v", err)
+	}
+	literal, ok := expr.(Literal)
+	if !ok {
+		t.Fatalf("Parse() returned %T, want Literal", expr)
+	}
+	if got, want := literal.Token.Type, NUMBER; got != want {
+		t.Errorf("literal token type = %q, want %q", got, want)
+	}
+	if got, want := literal.Token.Lexeme, "42"; got != want {
+		t.Errorf("literal token lexeme = %q, want %q", got, want)
+	}
+	if got, want := literal.Token.Line, 1; got != want {
+		t.Errorf("literal token line = %d, want %d", got, want)
+	}
+	if got, want := literal.Value, float64(42); got != want {
+		t.Errorf("literal value = %v, want %v", got, want)
+	}
+	if got, want := literal.String(), "42"; got != want {
+		t.Errorf("literal String() = %q, want %q", got, want)
+	}
+}
+
 func TestParseExpressionsContinuesAfterErrors(t *testing.T) {
 	hadError = false
 	tokens, failed := NewScanner("1 + )\n2 + * 3\n4").ScanTokens()

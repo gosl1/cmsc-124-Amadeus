@@ -213,16 +213,17 @@ func (p *Parser) parseUnary() Expr {
 
 func (p *Parser) parsePrimary() Expr {
 	if p.match(FALSE) {
-		return Literal{Value: false}
+		return Literal{Value: false, Token: p.previous()}
 	}
 	if p.match(TRUE) {
-		return Literal{Value: true}
+		return Literal{Value: true, Token: p.previous()}
 	}
 	if p.match(NULL) {
-		return Literal{Value: nil}
+		return Literal{Value: nil, Token: p.previous()}
 	}
 	if p.match(NUMBER, STRING) {
-		return Literal{Value: p.previous().Literal}
+		token := p.previous()
+		return Literal{Value: token.Literal, Token: token}
 	}
 	if p.match(IDENTIFIER) {
 		return Variable{Name: p.previous()}
