@@ -45,6 +45,19 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 		// Literals already contain their runtime value, so no computation is needed.
 		return expr.Value, nil
 
+	case Variable:
+		return e.environment.Get(expr.Name)
+
+	case Assign:
+		value, err := e.Evaluate(expr.Value)
+		if err != nil {
+			return nil, err
+		}
+		if err := e.environment.Assign(expr.Name, value); err != nil {
+			return nil, err
+		}
+		return value, nil
+
 	case Grouping:
 		// Evaluate the expression contained within the parentheses.
 		return e.Evaluate(expr.Expression)
