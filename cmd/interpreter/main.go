@@ -1,20 +1,21 @@
-	package main
+package main
 
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 )
 
 func main() {
 	args := os.Args[1:]
 
-	if len(args) >= 2 && args[0] == "--parse" {
+	if len(args) == 2 && args[0] == "--parse" {
 		runFileParse(args[1])
 		return
 	}
 
-	if len(args) >= 2 && args[0] == "--tokenize" {
+	if len(args) == 2 && args[0] == "--tokenize" {
 		runFileTokenize(args[1])
 		return
 	}
@@ -37,18 +38,19 @@ func runREPL() {
 		fmt.Print("> ")
 		line, err := reader.ReadString('\n')
 		if line != "" {
-			hadError = false
 			tokens, failed := NewScanner(line).ScanTokens()
-			// Same rule as file mode: a rejected line prints nothing to stdout.
 			if !failed {
 				for _, token := range tokens {
 					fmt.Println(token)
 				}
 			}
 		}
-		if err != nil { // io.EOF (Ctrl-D / Ctrl-Z) ends the session cleanly
+		if err != nil {
+			if err != io.EOF {
+				fmt.Fprintf(os.Stderr, "ama: input error: %v\n", err)
+			}
 			fmt.Println()
-			os.Exit(0)
+			return
 		}
 	}
 }
@@ -79,7 +81,6 @@ func runFileParse(path string) {
 		os.Exit(65)
 	}
 
-	hadError = false
 	tokens, failed := NewScanner(string(source)).ScanTokens()
 	if failed {
 		os.Exit(65)

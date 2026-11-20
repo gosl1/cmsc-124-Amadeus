@@ -2,15 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 )
 
 type Scanner struct {
-	source  string
-	tokens  []Token
-	start   int
-	current int
-	line    int
+	source   string
+	tokens   []Token
+	start    int
+	current  int
+	line     int
+	hadError bool
 }
 
 // keywords maps each themed lexeme to its token type.
@@ -45,7 +47,12 @@ func (s *Scanner) ScanTokens() ([]Token, bool) {
 		s.scanToken()
 	}
 	s.tokens = append(s.tokens, Token{Type: EOF, Lexeme: "", Literal: nil, Line: s.line})
-	return s.tokens, hadError
+	return s.tokens, s.hadError
+}
+
+func (s *Scanner) reportError(message string) {
+	fmt.Fprintf(os.Stderr, "[Attractor Field Violation] line %d: %s\n", s.line, message)
+	s.hadError = true
 }
 
 func (s *Scanner) scanToken() {
@@ -128,7 +135,7 @@ func (s *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			reportError(s.line, fmt.Sprintf("Unexpected character '%c'.", c))
+			s.reportError(fmt.Sprintf("Unexpected character '%c'.", c))
 		}
 	}
 }
@@ -206,7 +213,7 @@ func (s *Scanner) number() {
 	text := s.source[s.start:s.current]
 	value, err := strconv.ParseFloat(text, 64)
 	if err != nil {
-		reportError(s.line, fmt.Sprintf("Malformed number '%s'.", text))
+		s.reportError(fmt.Sprintf("Malformed number '%s'.", text))
 		return
 	}
 	s.addToken(NUMBER, value)
@@ -230,7 +237,7 @@ func (s *Scanner) stringLiteral() {
 			case '\\':
 				value = append(value, '\\')
 			default:
-				reportError(s.line, fmt.Sprintf("Invalid escape sequence '\\%c'.", escaped))
+				s.reportError(fmt.Sprintf("Invalid escape sequence '\\%c'.", escaped))
 			}
 			continue
 		}
@@ -238,7 +245,7 @@ func (s *Scanner) stringLiteral() {
 	}
 
 	if s.isAtEnd() || s.peek() == '\n' {
-		reportError(s.line, "Unterminated string.")
+		s.reportError("Unterminated string.")
 		return
 	}
 

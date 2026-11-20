@@ -5,6 +5,7 @@ import "math"
 // RuntimeError represents an error that occurs while evaluating an expression.
 // It stores the operator responsible for the error so we can identify its
 // source location when reporting the error.
+
 type RuntimeError struct {
 	Operator Token
 	Message  string
@@ -16,13 +17,21 @@ func (e RuntimeError) Error() string {
 	return e.Message
 }
 
-// Evaluator is responsible for traversing the AST and evaluating expressions.
 type Evaluator struct {
+	environment *Environment
 }
 
-// NewEvaluator creates and returns a new Evaluator instance.
+// NewEvaluator creates and returns an Evaluator with an empty environment.
 func NewEvaluator() *Evaluator {
-	return &Evaluator{}
+	return &Evaluator{
+		environment: NewEnvironment(),
+	}
+}
+
+// Define makes a variable available to this evaluator.
+// This will also be useful when variable declaration support is added.
+func (e *Evaluator) Define(name Token, value any) {
+	e.environment.Define(name, value)
 }
 
 // Evaluate recursively evaluates an AST expression and returns its resulting
