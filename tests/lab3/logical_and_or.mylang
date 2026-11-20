@@ -1,0 +1,4 @@
+true and 42 // expect: 42
+false or "fallback" // expect: fallback
+false and missing // expect: false
+true or missing // expect: true

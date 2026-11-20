@@ -124,6 +124,9 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 		}
 
 		switch expr.Operator.Type {
+		case AND, OR:
+			return rightVal, nil
+
 		case PLUS:
 			// Addition supports either two numbers or two strings.
 			leftNum, leftIsNum := leftVal.(float64)
