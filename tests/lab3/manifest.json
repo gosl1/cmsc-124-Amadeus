@@ -1,5 +1,5 @@
 {
-  "ext": ".mylang",
+  "ext": ".ama",
   "flag": "--eval",
-  "mode": "inline"
+  "mode": "sidecar"
 }
