@@ -287,8 +287,8 @@ python3 run_tests.py tests/lab2
 python3 run_tests.py tests/lab3
 ```
 
-The current GitHub Actions workflow runs Lab 1. Lab 2 and Lab 3 can be run
-locally with the commands above.
+The GitHub Actions workflow runs all three suites (Lab 1, Lab 2, and Lab 3)
+on each push. Lab suites can also be run locally with the commands above.
 
 ## Sample code
 
