@@ -22,7 +22,7 @@ trees, and its evaluator computes values from those trees.
 
 | Command | What it does |
 |---|---|
-| `./run <file>` | Not implemented yet; plain file execution is reserved for a later activity. |
+| `./run <file>` | Runs the Lab 0 file check and prints `Hello World`. |
 | `./run --tokenize <file>` | Scans the file and prints one token per line, including EOF. |
 | `./run --parse <file>` | Parses one expression per nonblank, non-comment line and prints one AST per expression. |
 | `./run --eval <file>` | Evaluates one expression per nonblank, non-comment line and prints one value per expression. |
@@ -252,6 +252,7 @@ or `end` when the parser reaches EOF:
 
 | Folder | Activity | Mode | Flag |
 |---|---|---|---|
+| `tests/lab0` | Plain-file entrypoint | sidecar | None |
 | `tests/lab1` | Scanner | sidecar | `--tokenize` |
 | `tests/lab2` | Parser | sidecar | `--parse` |
 | `tests/lab3` | Evaluator | sidecar | `--eval` |
@@ -261,9 +262,10 @@ file. Error cases also have an `.exit` file with the expected process exit
 code. The shared harness compares stdout and exit status. Sidecar expectations
 do not check the contents of stderr.
 
-Lab 1 has 47 cases covering comments, identifiers and keywords, whitespace
-and line tracking, numbers, operators, strings, and lexical errors. Lab 2 has
-41 cases grouped into:
+Lab 0 has one case that checks the plain-file entrypoint. Lab 1 has 47 cases
+covering comments, identifiers and keywords, whitespace and line tracking,
+numbers, operators, strings, and lexical errors. Lab 2 has 41 cases grouped
+into:
 
 - `expressions`: precedence, associativity, grouping, literals, unary
   expressions, long/nested expressions, and multiple expressions per file.
@@ -277,18 +279,19 @@ and line tracking, numbers, operators, strings, and lexical errors. Lab 2 has
 Lab 3 currently has 45 sidecar cases for literal values, grouping, logical and
 unary operators, arithmetic, comparisons, and string addition.
 
-Run a suite locally after building the interpreter:
+Run the suites locally after building the interpreter:
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/WhiteLicorice/cmsc-124-harness/v1.1/run_tests.py -o run_tests.py
 ./build.sh
+python3 run_tests.py tests/lab0
 python3 run_tests.py tests/lab1
 python3 run_tests.py tests/lab2
 python3 run_tests.py tests/lab3
 ```
 
-The GitHub Actions workflow runs all three suites (Lab 1, Lab 2, and Lab 3)
-on each push. Lab suites can also be run locally with the commands above.
+The GitHub Actions workflow runs all four suites (Lab 0 through Lab 3) on each
+push. Lab suites can also be run locally with the commands above.
 
 ## Sample code
 
@@ -338,5 +341,6 @@ Output:
 
 | Activity | What changed |
 |---|---|
+| Lab 0 | Added plain-file invocation that checks the file and prints `Hello World`. |
 | Lab 1 | Scanner token rules, `--tokenize` file scanning, scanner REPL, and scanner test suite. |
 | Lab 2 | Added an expression grammar and recursive-descent parser, parenthesized AST output, `--parse` file mode, and line-based parse error recovery. |

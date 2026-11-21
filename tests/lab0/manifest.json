@@ -1,5 +1,5 @@
 {
-  "ext": ".go",
+  "ext": ".ama",
   "mode": "sidecar",
   "run_entrypoint": "./run"
 }

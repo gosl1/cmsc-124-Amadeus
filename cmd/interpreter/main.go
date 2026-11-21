@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -32,10 +33,25 @@ func main() {
 		return
 	}
 
+	// Lab 0 accepts a plain source-file argument.
+	if len(args) == 1 && !strings.HasPrefix(args[0], "--") {
+		runLab0(args[0])
+		return
+	}
+
 	// Anything else (missing file, unknown flag) is a usage error.
-	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file> | --parse <file> | --eval <file>]")
+	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file> | --parse <file> | --eval <file> | <file>]")
 	os.Exit(64)
 
+}
+
+func runLab0(path string) {
+	if _, err := os.ReadFile(path); err != nil {
+		fmt.Fprintf(os.Stderr, "ama: cannot read '%s': %v\n", path, err)
+		os.Exit(65)
+	}
+	fmt.Println("Hello World")
+	os.Exit(0)
 }
 
 // runREPL reads and evaluates one expression at a time.
