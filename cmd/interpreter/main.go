@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -32,23 +33,51 @@ func main() {
 		return
 	}
 
+	// Lab 0 accepts a plain source-file argument.
+	if len(args) == 1 && !strings.HasPrefix(args[0], "--") {
+		runLab0(args[0])
+		return
+	}
+
 	// Anything else (missing file, unknown flag) is a usage error.
-	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file> | --parse <file> | --eval <file>]")
+	fmt.Fprintln(os.Stderr, "usage: run [--tokenize <file> | --parse <file> | --eval <file> | <file>]")
 	os.Exit(64)
 
 }
 
-// runREPL reads one line at a time, scans it, and prints its tokens.
+func runLab0(path string) {
+	if _, err := os.ReadFile(path); err != nil {
+		fmt.Fprintf(os.Stderr, "ama: cannot read '%s': %v\n", path, err)
+		os.Exit(65)
+	}
+	fmt.Println("Hello World")
+	os.Exit(0)
+}
+
+// runREPL reads and evaluates one expression at a time.
 func runREPL() {
 	reader := bufio.NewReader(os.Stdin)
+	evaluator := NewEvaluator()
 	for {
 		fmt.Print("> ")
 		line, err := reader.ReadString('\n')
 		if line != "" {
 			tokens, failed := NewScanner(line).ScanTokens()
-			if !failed {
-				for _, token := range tokens {
-					fmt.Println(token)
+			if !failed && len(tokens) > 1 {
+				expr, parseErr := NewParser(tokens).Parse()
+				if parseErr != nil {
+					if syntaxErr, ok := parseErr.(parseError); ok {
+						reportParseError(syntaxErr)
+					} else {
+						fmt.Fprintln(os.Stderr, parseErr)
+					}
+				} else {
+					value, evalErr := evaluator.Evaluate(expr)
+					if evalErr != nil {
+						reportRuntimeError(evalErr)
+					} else {
+						fmt.Println(formatValue(value))
+					}
 				}
 			}
 		}
@@ -105,18 +134,22 @@ func runFileEval(path string) {
 	for _, expr := range expressions {
 		value, err := evaluator.Evaluate(expr)
 		if err != nil {
-			var runtimeErr RuntimeError
-			if errors.As(err, &runtimeErr) {
-				fmt.Fprintf(os.Stderr, "[line %d] Runtime error: %s\n",
-					runtimeErr.Operator.Line, runtimeErr.Message)
-			} else {
-				fmt.Fprintf(os.Stderr, "Runtime error: %v\n", err)
-			}
+			reportRuntimeError(err)
 			os.Exit(70)
 		}
 		fmt.Println(formatValue(value))
 	}
 	os.Exit(0)
+}
+
+func reportRuntimeError(err error) {
+	var runtimeErr RuntimeError
+	if errors.As(err, &runtimeErr) {
+		fmt.Fprintf(os.Stderr, "[line %d] Runtime error: %s\n",
+			runtimeErr.Operator.Line, runtimeErr.Message)
+		return
+	}
+	fmt.Fprintf(os.Stderr, "Runtime error: %v\n", err)
 }
 
 func formatValue(value any) string {

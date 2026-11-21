@@ -1,6 +1,9 @@
 package main
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 // RuntimeError represents an error that occurs while evaluating an expression.
 // It stores the operator responsible for the error so we can identify its
@@ -94,6 +97,11 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 			// Logical NOT returns the opposite of the operand's truthiness.
 			return !isTruthy(rightVal), nil
 
+		default:
+			return nil, RuntimeError{
+				Operator: expr.Operator,
+				Message:  fmt.Sprintf("Unsupported unary operator '%s'.", expr.Operator.Lexeme),
+			}
 		}
 	case Binary:
 		// Evaluate the left operand first.
@@ -124,6 +132,9 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 		}
 
 		switch expr.Operator.Type {
+		case AND, OR:
+			return rightVal, nil
+
 		case PLUS:
 			// Addition supports either two numbers or two strings.
 			leftNum, leftIsNum := leftVal.(float64)
@@ -195,12 +206,16 @@ func (e *Evaluator) Evaluate(expr Expr) (any, error) {
 
 		case BANG_EQUAL:
 			return !isEqual(leftVal, rightVal), nil
+
+		default:
+			return nil, RuntimeError{
+				Operator: expr.Operator,
+				Message:  fmt.Sprintf("Unsupported binary operator '%s'.", expr.Operator.Lexeme),
+			}
 		}
 	}
 
-	// Temporary fallback for expression types or operators not yet implemented.
-	// This should eventually be replaced with an appropriate error.
-	return nil, nil
+	return nil, fmt.Errorf("Unsupported expression type %T.", expr)
 }
 
 // isTruthy determines whether a runtime value is considered true or false.
