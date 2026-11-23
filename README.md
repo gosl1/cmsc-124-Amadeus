@@ -17,6 +17,16 @@ trees, and its evaluator computes values from those trees.
 - Version metadata: go.mod
 - Build: `./build.sh`
 
+## Project structure
+
+- `main.go`: command-line interface and REPL.
+- `scanner/`: token definitions and lexical analysis.
+- `parser/`: expression AST, parser, and parser tests.
+- `evaluator/`: expression evaluation and runtime environment.
+
+The root `main.go` imports these component packages, and `build.sh` builds the
+root executable.
+
 ## Running it
 
 
@@ -55,7 +65,7 @@ value, and returns to the prompt after scanner, syntax, or runtime errors. EOF
 ### Keywords
 
 | Keyword | Token type | Use in the current expression grammar |
-|---|---|---|---|
+|---|---|---|
 | `res` | `RES` | Reserved; not an expression form yet. |
 | `dmail` | `DMAIL` | Reserved; not an expression form yet. |
 | `div` | `DIV` | Reserved; not an expression form yet. |
@@ -284,10 +294,10 @@ Run the suites locally after building the interpreter:
 ```sh
 curl -sSL https://raw.githubusercontent.com/WhiteLicorice/cmsc-124-harness/v1.1/run_tests.py -o run_tests.py
 ./build.sh
-python3 run_tests.py tests/lab0
-python3 run_tests.py tests/lab1
-python3 run_tests.py tests/lab2
-python3 run_tests.py tests/lab3
+python run_tests.py tests/lab0
+python run_tests.py tests/lab1
+python run_tests.py tests/lab2
+python run_tests.py tests/lab3
 ```
 
 The GitHub Actions workflow runs all four suites (Lab 0 through Lab 3) on each
