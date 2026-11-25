@@ -32,8 +32,8 @@ var keywords = map[string]TokenType{
 	"or":             OR,
 }
 
+// NewScanner creates a scanner initialized with the source text.
 func NewScanner(source string) *Scanner {
-	//Gives a pointer to Scanner and creates the variable implicitly
 	return &Scanner{
 		source: source,
 		tokens: []Token{},
@@ -41,6 +41,7 @@ func NewScanner(source string) *Scanner {
 	}
 }
 
+// ScanTokens scans the source and returns the resulting tokens plus whether an error occurred.
 func (s *Scanner) ScanTokens() ([]Token, bool) {
 	for !s.isAtEnd() {
 		s.start = s.current
@@ -50,11 +51,13 @@ func (s *Scanner) ScanTokens() ([]Token, bool) {
 	return s.tokens, s.hadError
 }
 
+// reportError writes a scanner error to stderr and marks the scan as failed.
 func (s *Scanner) reportError(message string) {
 	fmt.Fprintf(os.Stderr, "[Attractor Field Violation] line %d: %s\n", s.line, message)
 	s.hadError = true
 }
 
+// scanToken consumes one lexeme and adds its token to the scanner output.
 func (s *Scanner) scanToken() {
 	c := s.advance()
 
@@ -139,6 +142,8 @@ func (s *Scanner) scanToken() {
 		}
 	}
 }
+
+// isAtEnd reports whether the scanner has consumed the whole source.
 func (s *Scanner) isAtEnd() bool {
 	return s.current >= len(s.source)
 }
@@ -151,6 +156,7 @@ func (s *Scanner) advance() byte {
 
 }
 
+// addToken adds a token whose lexeme spans from start to the current position.
 func (s *Scanner) addToken(tokenType TokenType, literal any) {
 	text := s.source[s.start:s.current]
 	s.tokens = append(s.tokens, Token{Type: tokenType, Lexeme: text, Literal: literal, Line: s.line})
@@ -164,7 +170,6 @@ func (s *Scanner) peek() byte {
 	return s.source[s.current]
 }
 
-// looks two characters ahead of the consumed character.
 // peekNext looks one character further than peek — needed to decide
 // whether a "." after digits is a decimal point or its own token.
 func (s *Scanner) peekNext() byte {
@@ -200,6 +205,7 @@ func (s *Scanner) identifier() {
 	s.addToken(tokType, nil)
 }
 
+// number consumes an integer or decimal numeric literal and adds a NUMBER token.
 func (s *Scanner) number() {
 	for isDigit(s.peek()) {
 		s.advance()
@@ -219,6 +225,7 @@ func (s *Scanner) number() {
 	s.addToken(NUMBER, value)
 }
 
+// stringLiteral consumes a quoted string, processes supported escapes, and adds a STRING token.
 func (s *Scanner) stringLiteral() {
 	var value []byte
 
@@ -253,14 +260,17 @@ func (s *Scanner) stringLiteral() {
 	s.addToken(STRING, string(value))
 }
 
+// isAlpha reports whether c is a letter or underscore.
 func isAlpha(c byte) bool {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
 }
 
+// isDigit reports whether c is an ASCII decimal digit.
 func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
 }
 
+// isAlphaNumeric reports whether c is an identifier letter, underscore, or digit.
 func isAlphaNumeric(c byte) bool {
 	return isAlpha(c) || isDigit(c)
 }
